@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const { sendMail } = require("../utils/sendMail");
 const prisma = new PrismaClient();
 
 
@@ -23,6 +24,16 @@ router.post("/", async(req, res)=>{
             password: password
         }
     })
+    let token = Math.floor(Math.random()*100000)
+    let newToken = await prisma.token.create({
+        data: {
+            token: token,
+            userId: newUser.id
+        }
+    })
+
+    let Link = `http://localhost:4545/verify/${token}/${newUser.id}`;
+    await sendMail(email, "verify Email", Link);
     res.json({newUser});
 })
 
